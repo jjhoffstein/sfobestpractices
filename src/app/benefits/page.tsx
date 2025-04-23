@@ -131,7 +131,7 @@ export default function BenefitsPage() {
         </h2>
         <div className="prose max-w-none">
           <p>
-            If your family office structure isn't providing these benefits, it's time to consider modernization.
+            If your family office structure isn&apos;t providing these benefits, it&apos;s time to consider modernization.
             Our implementation guide can help you transition to this optimized structure.
           </p>
           <div className="mt-6">
