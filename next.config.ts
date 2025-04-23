@@ -1,29 +1,25 @@
 import type { NextConfig } from 'next';
-import type { Configuration } from 'webpack';
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
   output: 'export',
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
-  // Ensure compatibility with Cloudflare Pages
-  webpack: (config: Configuration, { isServer }: { isServer: boolean }) => {
-    if (!isServer) {
-      config.resolve = {
-        ...config.resolve,
-        fallback: {
-          ...(config.resolve?.fallback || {}),
-          fs: false,
-        },
-      };
-    }
-    return config;
-  },
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
+  // Enable strict mode for better development experience
+  reactStrictMode: true,
+  // Recommended for Cloudflare Pages
+  experimental: {
+    // Enable optimizations for Cloudflare Workers
+    optimizeCss: true,
+    // Improve code-splitting
+    optimizePackageImports: ['react', 'react-dom'],
   },
 };
 

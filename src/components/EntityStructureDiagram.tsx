@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import EntityDetails from './EntityDetails';
 
 interface EntityBoxProps {
@@ -11,15 +11,28 @@ interface EntityBoxProps {
   isTrust?: boolean;
   onClick?: () => void;
   children?: React.ReactNode;
+  subtitle?: string;
 }
 
-const EntityBox = React.memo(({ title, color, position, variant = 'rectangle', isTrust = false, onClick, children }: EntityBoxProps) => {
-  const baseClasses = `p-3 sm:p-4 border-2 ${color} shadow-sm hover:shadow-md cursor-pointer transition-all duration-200 min-w-[160px] sm:min-w-[180px] backdrop-blur-sm ${isTrust ? 'bg-gray-50/90' : 'bg-white'}`;
+const EntityBox = React.memo(({ title, color, position, variant = 'rectangle', isTrust = false, onClick, children, subtitle }: EntityBoxProps) => {
+  const baseClasses = `
+    p-2.5 sm:p-3 lg:p-4 
+    border-2 ${color} 
+    shadow-sm hover:shadow-md active:shadow-inner
+    cursor-pointer 
+    transition-all duration-200 ease-in-out
+    min-w-[135px] sm:min-w-[160px] lg:min-w-[180px] 
+    backdrop-blur-sm 
+    touch-manipulation
+    select-none
+    ${isTrust ? 'bg-gray-50/95' : 'bg-white/95'}
+    transform hover:scale-105 active:scale-100
+  `;
   
   const shapeClasses = {
-    'rectangle': 'rounded-lg',
+    'rectangle': 'rounded-xl',
     'hexagon': 'clip-hexagon',
-    'oval': 'rounded-full px-8'
+    'oval': 'rounded-full px-5 sm:px-6 lg:px-8'
   };
 
   return (
@@ -34,13 +47,15 @@ const EntityBox = React.memo(({ title, color, position, variant = 'rectangle', i
       <div
         className={`${baseClasses} ${shapeClasses[variant]}`}
         role="button"
+        tabIndex={0}
         aria-label={title}
         onClick={onClick}
+        onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
       >
-        <h4 className="font-semibold text-xs sm:text-sm text-center mb-1">{title}</h4>
-        {children && (
-          <div className="text-[10px] sm:text-xs text-gray-600 text-center">
-            {children}
+        <h4 className="font-semibold text-[11px] sm:text-xs lg:text-sm text-center mb-0.5 sm:mb-1 text-gray-800 leading-tight">{title}</h4>
+        {(children || subtitle) && (
+          <div className="text-[9px] sm:text-[10px] lg:text-xs text-gray-600 text-center leading-tight">
+            {subtitle || children}
           </div>
         )}
       </div>
@@ -56,49 +71,72 @@ interface ConnectingLineProps {
   dashed?: boolean;
 }
 
-const ConnectingLine = ({ start, end, dashed = false }: ConnectingLineProps) => (
+const ConnectingLine = React.memo(({ start, end, dashed = false }: ConnectingLineProps) => (
   <line
     x1={`${start.x}%`}
     y1={`${start.y}%`}
     x2={`${end.x}%`}
     y2={`${end.y}%`}
-    stroke="#CBD5E1"
-    strokeWidth="2"
+    stroke="#94A3B8"
+    strokeWidth="1.5"
     strokeDasharray={dashed ? "4 4" : ""}
+    strokeLinecap="round"
+    className="transition-all duration-300"
   />
-);
+));
+
+ConnectingLine.displayName = 'ConnectingLine';
 
 export default function EntityStructureDiagram() {
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
 
-  const handleEntityClick = (entityType: string) => {
+  const handleEntityClick = useCallback((entityType: string) => {
     setSelectedEntity(entityType);
-  };
+  }, []);
 
-  // Define entity positions
+  // Define entity positions with optimized spacing for mobile
   const positions = {
-    managing: { x: 50, y: 15 },
-    fllc: { x: 50, y: 35 },
-    patriarchTrust: { x: 20, y: 55 },
-    matriarchTrust: { x: 40, y: 55 },
-    intlTrust: { x: 60, y: 55 },
-    childTrust1: { x: 80, y: 55 },
-    patriarch: { x: 20, y: 75 },
-    matriarch: { x: 40, y: 75 },
-    g2Parents: { x: 60, y: 75 },
-    child1: { x: 80, y: 75 }
+    managing: { x: 50, y: 12 },    // Moved up for better spacing
+    fllc: { x: 50, y: 30 },        // Adjusted for clarity
+    patriarchTrust: { x: 18, y: 48 }, // Increased spacing between entities
+    matriarchTrust: { x: 40, y: 48 },
+    intlTrust: { x: 60, y: 48 },
+    childTrust1: { x: 82, y: 48 },
+    patriarch: { x: 18, y: 66 },    // Adjusted vertical spacing
+    matriarch: { x: 40, y: 66 },
+    g2Parents: { x: 60, y: 66 },
+    child1: { x: 82, y: 66 }
   };
 
   return (
-    <div className="relative w-full aspect-[16/9] max-w-6xl mx-auto">
+    <div className="relative w-full aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/9] max-w-6xl mx-auto">
       <style jsx global>{`
         .clip-hexagon {
-          clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+          clip-path: polygon(22% 0%, 78% 0%, 100% 50%, 78% 100%, 22% 100%, 0% 50%);
+        }
+        @media (max-width: 640px) {
+          .clip-hexagon {
+            clip-path: polygon(18% 0%, 82% 0%, 100% 50%, 82% 100%, 18% 100%, 0% 50%);
+          }
         }
       `}</style>
 
       {/* SVG Layer for Connections */}
-      <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
+      <svg 
+        className="absolute inset-0 w-full h-full" 
+        style={{ zIndex: 0 }}
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
         {/* Vertical Connections */}
         <ConnectingLine start={positions.managing} end={positions.fllc} />
         
@@ -130,82 +168,87 @@ export default function EntityStructureDiagram() {
       {/* Managing Member */}
       <EntityBox
         title="Managing Member"
-        color="border-blue-500"
+        color="border-blue-600"
         position={positions.managing}
         variant="rectangle"
         onClick={() => handleEntityClick('Managing Member')}
-      >
-      </EntityBox>
+        subtitle="Control Entity"
+      />
 
       {/* FLLC */}
       <EntityBox
         title="FLLC"
-        color="border-yellow-500"
+        color="border-yellow-600"
         position={positions.fllc}
         variant="rectangle"
         onClick={() => handleEntityClick('FLLC')}
+        subtitle="Family Limited Liability Company"
       />
 
       {/* Trust Level */}
       <EntityBox
-        title="Patriarch's Living Trust"
-        color="border-green-400"
+        title="Patriarch's Trust"
+        color="border-emerald-500"
         position={positions.patriarchTrust}
-        variant="hexagon"
+        variant="rectangle"
         isTrust
         onClick={() => handleEntityClick('Living Trust')}
+        subtitle="Living Trust"
       />
       <EntityBox
-        title="Matriarch's Living Trust"
-        color="border-green-400"
+        title="Matriarch's Trust"
+        color="border-emerald-500"
         position={positions.matriarchTrust}
-        variant="hexagon"
+        variant="rectangle"
         isTrust
         onClick={() => handleEntityClick('Living Trust')}
+        subtitle="Living Trust"
       />
       <EntityBox
-        title="International Asset Protection Trust"
-        color="border-green-400"
+        title="Int'l Trust"
+        color="border-emerald-500"
         position={positions.intlTrust}
-        variant="hexagon"
+        variant="rectangle"
         isTrust
         onClick={() => handleEntityClick('Asset Protection Trust')}
+        subtitle="Asset Protection"
       />
       <EntityBox
-        title="Childrens' Trusts"
-        color="border-green-400"
+        title="Children's Trusts"
+        color="border-emerald-500"
         position={positions.childTrust1}
-        variant="hexagon"
+        variant="rectangle"
         isTrust
         onClick={() => handleEntityClick('Child Trust')}
+        subtitle="Generational Planning"
       />
 
       {/* Individual Level */}
       <EntityBox
         title="Patriarch"
-        color="border-gray-300"
+        color="border-slate-400"
         position={positions.patriarch}
         variant="oval"
       />
       <EntityBox
         title="Matriarch"
-        color="border-gray-300"
+        color="border-slate-400"
         position={positions.matriarch}
         variant="oval"
       />
       <EntityBox
         title="G2 Parents"
-        color="border-gray-300"
+        color="border-slate-400"
         position={positions.g2Parents}
         variant="oval"
-      >
-        G2 and G3
-      </EntityBox>
+        subtitle="Dynasty Assets"
+      />
       <EntityBox
         title="Children"
-        color="border-gray-300"
+        color="border-slate-400"
         position={positions.child1}
         variant="oval"
+        subtitle="G2 & G3"
       />
 
       <EntityDetails

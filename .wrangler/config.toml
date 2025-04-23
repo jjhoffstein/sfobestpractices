@@ -1,0 +1,12 @@
+[build]
+command = "npm run build"
+output_directory = "out"
+base_directory = "."
+
+[site]
+bucket = "./out"
+entry-point = "."
+
+[env.production]
+name = "sfobestpractices"
+workers_dev = true 
