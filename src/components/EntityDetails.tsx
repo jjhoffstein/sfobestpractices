@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 interface EntityDetailsProps {
   entityType: string;
   isOpen: boolean;
