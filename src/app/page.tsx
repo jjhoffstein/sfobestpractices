@@ -25,7 +25,7 @@ export default function Home() {
             
             <ul className="list-none space-y-4 mb-8">
               {[
-                'A strategically-domiciled S-Corporation or LLC holding company (HoldCo)',
+                'A strategically-domiciled C-Corporation or LLC holding company (HoldCo)',
                 'Strategically structured subsidiaries for different asset classes',
                 'Integration with living trusts for succession planning',
                 'Clear separation of operating entities and investment vehicles'
