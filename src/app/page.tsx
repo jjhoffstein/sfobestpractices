@@ -1,18 +1,57 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { trackCTAClick, trackContentInteraction } from '@/utils/analytics';
 
 export default function Home() {
-  useEffect(() => {
-    // Track page view for the homepage
-    // Basic page view is already tracked in layout, but we can add specific homepage details here if needed.
-    // trackPageView('/', { title: 'Homepage' }); 
+  // Refs for the sections we want to observe
+  const executiveSummaryRef = useRef<HTMLElement>(null);
+  const callToActionRef = useRef<HTMLElement>(null);
 
-    // Track visibility of key sections on mount (basic - can be refined with IntersectionObserver)
-    trackContentInteraction('executive_summary_section', 'view');
-    trackContentInteraction('call_to_action_section', 'view');
-  }, []); // Run once on mount
+  useEffect(() => {
+    // Create an Intersection Observer
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Check if the element is intersecting (visible)
+          if (entry.isIntersecting) {
+            const sectionId = (entry.target as HTMLElement).id;
+            if (sectionId) {
+              // Fire the 'view' event for the visible section
+              trackContentInteraction(sectionId, 'view', { viewport_width: window.innerWidth });
+              // Stop observing the element once it's been viewed
+              observer.unobserve(entry.target);
+            }
+          }
+        });
+      },
+      {
+        // Options for the observer
+        threshold: 0.5, // Trigger when 50% of the element is visible
+        // rootMargin: '0px', // Default
+        // root: null, // Default is the viewport
+      }
+    );
+
+    // Observe the sections if the refs are attached
+    if (executiveSummaryRef.current) {
+      // Assign an ID for tracking purposes
+      executiveSummaryRef.current.id = 'executive_summary_section';
+      observer.observe(executiveSummaryRef.current);
+    }
+    if (callToActionRef.current) {
+       // Assign an ID for tracking purposes
+      callToActionRef.current.id = 'call_to_action_section';
+      observer.observe(callToActionRef.current);
+    }
+
+    // Clean up the observer on component unmount
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, []); // Empty dependency array means this effect runs once on mount
 
   const handleCTAClick = (buttonName: string) => {
     trackCTAClick(buttonName, 'homepage_cta_section');
@@ -32,7 +71,7 @@ export default function Home() {
         </section>
 
         {/* Executive Summary Section */}
-        <section className="bg-white/95 backdrop-blur-lg rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 border border-gray-100">
+        <section ref={executiveSummaryRef} className="bg-white/95 backdrop-blur-lg rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 border border-gray-100">
           <h2 className="font-playfair text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6">
             Executive Summary
           </h2>
@@ -100,7 +139,7 @@ export default function Home() {
         </section>
 
         {/* Call to Action Section */}
-        <section className="bg-white/95 backdrop-blur-lg rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 border border-gray-100">
+        <section ref={callToActionRef} className="bg-white/95 backdrop-blur-lg rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 border border-gray-100">
           <h2 className="font-playfair text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6">
             Why Modernize Your Structure?
           </h2>
