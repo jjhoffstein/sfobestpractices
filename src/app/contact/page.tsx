@@ -82,12 +82,15 @@ const ContactPage = () => {
           const errorData = await response.json();
           console.error('Formspree submission failed:', response.status, errorData);
            // Use error details from Formspree if available
-          const msg = errorData.errors ? errorData.errors.map((err: any) => err.message).join(', ') : errorData.message || 'Unknown error';
-          setErrorMessage(`Form submission failed: ${msg}`);
-          trackFormInteraction('contact_form', 'error', { status: response.status, message: msg });
-        } catch (jsonError) {
+           // Attempt to map Formspree errors, handling cases where errors might not be in the expected format
+           const msg = Array.isArray(errorData?.errors)
+             ? errorData.errors.map((err: { message?: string }) => err.message || 'Unknown error detail').join(', ')
+             : errorData?.message || 'Unknown error';
+           setErrorMessage(`Form submission failed: ${msg}`);
+           trackFormInteraction('contact_form', 'error', { status: response.status, message: msg });
+        } catch (error) { // Changed jsonError to error and used it to log
            // Handle case where Formspree doesn't return JSON error
-           console.error('Formspree submission failed with non-JSON response:', response.status);
+           console.error('Formspree submission failed with non-JSON response or JSON parse error:', response.status, error);
            setErrorMessage('Form submission failed: Received an unexpected response from the server.');
            trackFormInteraction('contact_form', 'error', { status: response.status, message: 'Non-JSON error response from Formspree' });
         }
