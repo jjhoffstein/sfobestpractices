@@ -1,4 +1,24 @@
+'use client';
+
+import { useEffect } from 'react';
+import { trackCTAClick, trackContentInteraction } from '@/utils/analytics';
+import Link from 'next/link';
+
 export default function Home() {
+  useEffect(() => {
+    // Track page view for the homepage
+    // Basic page view is already tracked in layout, but we can add specific homepage details here if needed.
+    // trackPageView('/', { title: 'Homepage' }); 
+
+    // Track visibility of key sections on mount (basic - can be refined with IntersectionObserver)
+    trackContentInteraction('executive_summary_section', 'view');
+    trackContentInteraction('call_to_action_section', 'view');
+  }, []); // Run once on mount
+
+  const handleCTAClick = (buttonName: string) => {
+    trackCTAClick(buttonName, 'homepage_cta_section');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 space-y-6 sm:space-y-8 lg:space-y-12">
@@ -94,12 +114,14 @@ export default function Home() {
               <a 
                 href="/structure" 
                 className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border-2 border-blue-600 text-base sm:text-lg font-medium rounded-lg sm:rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 hover:shadow-lg"
+                onClick={() => handleCTAClick('explore_structure')}
               >
                 Explore the Structure
               </a>
               <a 
                 href="/operations" 
                 className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border-2 border-blue-600 text-base sm:text-lg font-medium rounded-lg sm:rounded-xl shadow-sm text-blue-600 bg-white hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 hover:shadow-md"
+                onClick={() => handleCTAClick('view_operations')}
               >
                 View Operations
               </a>
