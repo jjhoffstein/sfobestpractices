@@ -134,7 +134,7 @@ const ContactPage = () => {
           <input type="text" name="_gotcha" className="hidden" tabIndex={-1} autoComplete="new-password" />
 
           <div className="mb-4">
-            <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">Name:</label>
+            <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">Name:<span className="text-red-500">*</span></label>
             <input
               type="text"
               id="name"
@@ -148,7 +148,7 @@ const ContactPage = () => {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+            <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email:<span className="text-red-500">*</span></label>
             <input
               type="email"
               id="email"
@@ -163,7 +163,7 @@ const ContactPage = () => {
             {emailError && <p className="text-red-500 text-xs italic mt-1">{emailError}</p>} {/* Display email specific error */}
           </div>
           <div className="mb-6">
-            <label htmlFor="message" className="block text-gray-700 text-sm font-bold mb-2">Message:</label>
+            <label htmlFor="message" className="block text-gray-700 text-sm font-bold mb-2">Message:<span className="text-red-500">*</span></label>
             <textarea
               id="message"
               name="message"
@@ -195,6 +195,10 @@ const ContactPage = () => {
           )}
 
         </form>
+        {/* Required fields indicator */}
+        <p className="text-xs text-gray-500 mt-4 text-center">
+          Fields marked with <span className="text-red-500">*</span> are required.
+        </p>
       </div>
     </div>
   );
