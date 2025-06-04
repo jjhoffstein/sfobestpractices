@@ -74,6 +74,8 @@ const ContactPage = () => {
         Use this form to connect or share thoughts with a fellow enthusiast.
       </p>
 
+      {/* Added a comment to trigger re-deployment */}
+
       <div className="bg-white/95 backdrop-blur-lg rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 border border-gray-100 max-w-lg mx-auto">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="mb-4">
