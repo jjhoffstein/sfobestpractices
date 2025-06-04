@@ -13,6 +13,7 @@ const ContactPage = () => {
   const [formStarted, setFormStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<'success' | 'error' | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // State for specific error message
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -23,17 +24,43 @@ const ContactPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmissionStatus(null); // Reset status on new submission attempt
+    setErrorMessage(null); // Clear previous error message
+
+    // Basic client-side validation (checking for empty fields, although HTML required helps)
+    if (!formData.name || !formData.email || !formData.message) {
+      setSubmissionStatus('error');
+      setErrorMessage('Please fill in all required fields.');
+      trackFormInteraction('contact_form', 'error', { message: 'Client-side validation failed: missing fields' });
+      setIsSubmitting(false);
+      return; // Stop submission if validation fails
+    }
+    
+    // Basic email format validation
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+    if (!emailRegex.test(formData.email)) {
+       setSubmissionStatus('error');
+       setErrorMessage('Please enter a valid email address.');
+       trackFormInteraction('contact_form', 'error', { message: 'Client-side validation failed: invalid email format' });
+       setIsSubmitting(false);
+       return; // Stop submission
+    }
 
     // Track form submission attempt
     trackFormInteraction('contact_form', 'attempt');
 
+    // *** IMPORTANT ***
+    // Replace with your actual Formspree endpoint URL obtained from Formspree dashboard.
+    // Using the URL from the previous screenshot: https://formspree.io/f/mzzgzeae
+    const formspreeEndpoint = 'https://formspree.io/f/mzzgzeae'; // Direct Formspree endpoint
+
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch(formspreeEndpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json', // Use application/json as preferred by Formspree for fetch
+          'Accept': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData), // Send data as JSON
       });
 
       if (response.ok) {
@@ -42,14 +69,27 @@ const ContactPage = () => {
         trackFormInteraction('contact_form', 'complete'); // Track successful submission
       } else {
         setSubmissionStatus('error');
-        const errorData = await response.json();
-        console.error('Form submission failed:', response.status, errorData);
-        trackFormInteraction('contact_form', 'error', { status: response.status, message: errorData.message || 'Unknown error' }); // Track error
+        // Attempt to parse Formspree error response for more details if available
+        try {
+          const errorData = await response.json();
+          console.error('Formspree submission failed:', response.status, errorData);
+           // Use error details from Formspree if available
+          const msg = errorData.errors ? errorData.errors.map((err: any) => err.message).join(', ') : errorData.message || 'Unknown error';
+          setErrorMessage(`Form submission failed: ${msg}`);
+          trackFormInteraction('contact_form', 'error', { status: response.status, message: msg });
+        } catch (jsonError) {
+           // Handle case where Formspree doesn't return JSON error
+           console.error('Formspree submission failed with non-JSON response:', response.status);
+           setErrorMessage('Form submission failed: Received an unexpected response from the server.');
+           trackFormInteraction('contact_form', 'error', { status: response.status, message: 'Non-JSON error response from Formspree' });
+        }
       }
     } catch (error) {
       setSubmissionStatus('error');
-      console.error('Error sending form data:', error);
-      trackFormInteraction('contact_form', 'error', { message: (error as Error).message || 'Network error' }); // Track error
+      console.error('Error sending form data to Formspree:', error);
+      const msg = (error as Error).message || 'Network error';
+      setErrorMessage(`Form submission failed: ${msg}`);
+      trackFormInteraction('contact_form', 'error', { message: msg }); // Track network error
     } finally {
       setIsSubmitting(false);
     }
@@ -78,6 +118,10 @@ const ContactPage = () => {
 
       <div className="bg-white/95 backdrop-blur-lg rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 border border-gray-100 max-w-lg mx-auto">
         <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Honeypot field (for spam prevention) - Hidden from users but bots might fill it */}
+          <input type="text" name="_gotcha" className="hidden" tabIndex={-1} autoComplete="new-password" />
+
           <div className="mb-4">
             <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">Name:</label>
             <input
@@ -134,8 +178,8 @@ const ContactPage = () => {
             <p className="text-green-500 text-sm mt-4 text-center">Thank you for your message! We will get back to you shortly.</p>
           )}
 
-          {submissionStatus === 'error' && (
-            <p className="text-red-500 text-sm mt-4 text-center">There was an error sending your message. Please try again.</p>
+          {submissionStatus === 'error' && errorMessage && (
+            <p className="text-red-500 text-sm mt-4 text-center" aria-live="polite">{errorMessage}</p>
           )}
 
         </form>
