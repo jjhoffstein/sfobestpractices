@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { trackCTAClick, trackContentInteraction } from '@/utils/analytics';
-import Link from 'next/link';
 
 export default function Home() {
   useEffect(() => {
