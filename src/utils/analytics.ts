@@ -73,7 +73,7 @@ export const trackCTAClick = (
 // Track form interactions
 export const trackFormInteraction = (
   formName: string,
-  action: 'start' | 'complete' | 'error',
+  action: 'start' | 'complete' | 'error' | 'attempt',
   metadata?: AnalyticsMetadata
 ) => {
   const cf = getCloudflareAnalytics();

@@ -82,6 +82,17 @@ export default function Navigation() {
             >
               Operations
             </Link>
+            <Link
+              href="/contact"
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                pathname === '/contact'
+                  ? 'text-blue-700 bg-blue-50'
+                  : 'text-gray-700 hover:text-blue-700 hover:bg-blue-50'
+              }`}
+              onClick={() => handleMenuClick('contact')}
+            >
+              Contact
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -155,6 +166,17 @@ export default function Navigation() {
             onClick={() => handleMenuClick('operations_mobile')}
           >
             Operations
+          </Link>
+          <Link
+            href="/contact"
+            className={`block px-3 py-2 rounded-lg text-base font-medium ${
+              pathname === '/contact'
+                ? 'text-blue-700 bg-blue-50'
+                : 'text-gray-700 hover:text-blue-700 hover:bg-blue-50'
+            }`}
+            onClick={() => handleMenuClick('contact_mobile')}
+          >
+            Contact
           </Link>
         </div>
       </div>
