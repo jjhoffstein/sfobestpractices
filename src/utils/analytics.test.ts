@@ -1,17 +1,26 @@
 import { trackPageView, trackContentInteraction, trackCTAClick, trackFormInteraction, trackPerformanceMetric } from './analytics';
 
+// Type definitions for Cloudflare Web Analytics (re-declared or imported if needed elsewhere)
+interface CloudflareAnalytics {
+  (action: string, eventName: string, data: Record<string, unknown>): void;
+}
+
+interface CustomWindow extends Window {
+  cf?: CloudflareAnalytics;
+}
+
 describe('Analytics Utilities', () => {
-  let mockCF: any;
+  let mockCF: CloudflareAnalytics;
 
   beforeEach(() => {
     // Mock the CloudFlare analytics object
-    mockCF = jest.fn();
-    (window as any).cf = mockCF;
+    mockCF = jest.fn() as unknown as CloudflareAnalytics; // Cast jest.fn() which is a Mock to the analytics type
+    (window as CustomWindow).cf = mockCF;
   });
 
   afterEach(() => {
     // Clean up
-    delete (window as any).cf;
+    delete (window as CustomWindow).cf;
     jest.clearAllMocks();
   });
 
@@ -30,7 +39,7 @@ describe('Analytics Utilities', () => {
     });
 
     it('should not throw when CloudFlare is not available', () => {
-      delete (window as any).cf;
+      delete (window as CustomWindow).cf;
       expect(() => trackPageView('/test-page')).not.toThrow();
     });
   });

@@ -1,12 +1,37 @@
+// Type definitions for Cloudflare Web Analytics
+interface CloudflareAnalytics {
+  (action: string, eventName: string, data: Record<string, unknown>): void;
+}
+
+interface CustomWindow extends Window {
+  cf?: CloudflareAnalytics;
+}
+
+// Define a type for metadata
+type AnalyticsMetadata = Record<string, unknown>;
+
 // Analytics utility functions for tracking user interactions
 
+// Helper function to safely get the Cloudflare analytics instance
+const getCloudflareAnalytics = (): CloudflareAnalytics | undefined => {
+  const customWindow = window as CustomWindow;
+  if (typeof customWindow !== 'undefined' && customWindow.cf && typeof customWindow.cf === 'function') {
+    return customWindow.cf;
+  }
+  return undefined;
+};
+
 // Track page views with additional metadata
-export const trackPageView = (page: string, metadata?: Record<string, any>) => {
-  if (typeof window !== 'undefined' && (window as any).cf) {
-    (window as any).cf('track', 'page_view', {
+export const trackPageView = (
+  page: string,
+  metadata?: AnalyticsMetadata
+) => {
+  const cf = getCloudflareAnalytics();
+  if (cf) {
+    cf('track', 'page_view', {
       page,
       ...metadata,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 };
@@ -15,14 +40,15 @@ export const trackPageView = (page: string, metadata?: Record<string, any>) => {
 export const trackContentInteraction = (
   section: string,
   action: 'view' | 'click' | 'scroll' | 'open' | 'close',
-  metadata?: Record<string, any>
+  metadata?: AnalyticsMetadata
 ) => {
-  if (typeof window !== 'undefined' && (window as any).cf) {
-    (window as any).cf('track', 'content_interaction', {
+  const cf = getCloudflareAnalytics();
+  if (cf) {
+    cf('track', 'content_interaction', {
       section,
       action,
       ...metadata,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 };
@@ -31,14 +57,15 @@ export const trackContentInteraction = (
 export const trackCTAClick = (
   ctaName: string,
   location: string,
-  metadata?: Record<string, any>
+  metadata?: AnalyticsMetadata
 ) => {
-  if (typeof window !== 'undefined' && (window as any).cf) {
-    (window as any).cf('track', 'cta_click', {
+  const cf = getCloudflareAnalytics();
+  if (cf) {
+    cf('track', 'cta_click', {
       cta_name: ctaName,
       location,
       ...metadata,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 };
@@ -47,14 +74,15 @@ export const trackCTAClick = (
 export const trackFormInteraction = (
   formName: string,
   action: 'start' | 'complete' | 'error',
-  metadata?: Record<string, any>
+  metadata?: AnalyticsMetadata
 ) => {
-  if (typeof window !== 'undefined' && (window as any).cf) {
-    (window as any).cf('track', 'form_interaction', {
+  const cf = getCloudflareAnalytics();
+  if (cf) {
+    cf('track', 'form_interaction', {
       form_name: formName,
       action,
       ...metadata,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 };
@@ -63,14 +91,15 @@ export const trackFormInteraction = (
 export const trackPerformanceMetric = (
   metricName: string,
   value: number,
-  metadata?: Record<string, any>
+  metadata?: AnalyticsMetadata
 ) => {
-  if (typeof window !== 'undefined' && (window as any).cf) {
-    (window as any).cf('track', 'performance_metric', {
+  const cf = getCloudflareAnalytics();
+  if (cf) {
+    cf('track', 'performance_metric', {
       metric_name: metricName,
       value,
       ...metadata,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
-}; 
+};
