@@ -13,37 +13,45 @@ const ContactPage = () => {
   const [formStarted, setFormStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<'success' | 'error' | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // State for specific error message
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null); // State for email specific error
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
+    // Clear specific errors when user starts typing in the field
+    if (name === 'email') setEmailError(null);
+    // Could add similar for other fields if needed
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmissionStatus(null); // Reset status on new submission attempt
-    setErrorMessage(null); // Clear previous error message
+    setSubmissionStatus(null); // Reset general status
+    setErrorMessage(null); // Clear general error message
+    setEmailError(null); // Clear specific email error
 
     // Basic client-side validation (checking for empty fields, although HTML required helps)
     if (!formData.name || !formData.email || !formData.message) {
       setSubmissionStatus('error');
       setErrorMessage('Please fill in all required fields.');
-      trackFormInteraction('contact_form', 'error', { message: 'Client-side validation failed: missing fields' });
-      setIsSubmitting(false);
-      return; // Stop submission if validation fails
+      // We won't return here immediately, allow email format check below
+      setIsSubmitting(false); // Re-enable button quickly if basic check fails
+      // return; // Removed immediate return
     }
     
     // Basic email format validation
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     if (!emailRegex.test(formData.email)) {
-       setSubmissionStatus('error');
-       setErrorMessage('Please enter a valid email address.');
+       setSubmissionStatus('error'); // Set general error status
+       setEmailError('Please enter a valid email address.'); // Set specific email error
        trackFormInteraction('contact_form', 'error', { message: 'Client-side validation failed: invalid email format' });
-       setIsSubmitting(false);
-       return; // Stop submission
+       setIsSubmitting(false); // Re-enable button
+       return; // Stop submission if email is invalid
     }
+
+    // If we reach here, basic validation passed, clear any previous general error related to missing fields
+    if (submissionStatus !== 'error') setErrorMessage(null); // Clear general error if it was just missing fields
 
     // Track form submission attempt
     trackFormInteraction('contact_form', 'attempt');
@@ -149,6 +157,7 @@ const ContactPage = () => {
               required
               disabled={isSubmitting}
             />
+            {emailError && <p className="text-red-500 text-xs italic mt-1">{emailError}</p>} {/* Display email specific error */}
           </div>
           <div className="mb-6">
             <label htmlFor="message" className="block text-gray-700 text-sm font-bold mb-2">Message:</label>
