@@ -1,13 +1,15 @@
 import './globals.css';
 import { Inter, Playfair_Display } from 'next/font/google';
 import Navigation from '../components/Navigation';
+import Script from 'next/script';
+import AnalyticsClient from '../components/AnalyticsClient';
 
 const inter = Inter({ 
   subsets: ['latin'],
   display: 'swap',
 });
 
-const playfair = Playfair_Display({
+const playfair = Playfair_Display({ 
   subsets: ['latin'],
   display: 'swap',
 });
@@ -24,9 +26,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.className} ${playfair.className}`}>
+      <head>
+        <Script
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "YOUR_CLOUDFLARE_TOKEN"}'
+          strategy="afterInteractive"
+        />
+      </head>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <Navigation />
-        
+        <AnalyticsClient />
         {/* Disclaimer Banner */}
         <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
